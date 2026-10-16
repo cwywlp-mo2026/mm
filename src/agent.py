@@ -22,8 +22,8 @@ class SEOAgent:
         return self.llm.choose_skill(query, self.index)
 
     # ── 运行教学闭环 ────────────────────────────────
-    # answer_source: 一个返回下一次用户作答的函数（交互模式=input，demo=预置队列）
-    def run(self, query: str, answer_source: Callable[[], str],
+    # answer_source: 接收当前题目、返回用户作答的函数（交互模式=input，demo=自动规划）
+    def run(self, query: str, answer_source: Callable[[object], str],
             echo: Optional[Callable[[str], None]] = None):
         echo = echo or print
         mode = "真实 LLM" if self.llm.is_live else "离线模拟"
@@ -44,9 +44,8 @@ class SEOAgent:
         questions = self.llm.generate_questions(skill)
         correct = 0
         for q in questions:
-            echo("\n" + q.prompt)
-            ans = answer_source()
-            echo(f"> 你的回答：{ans}")
+            echo("\n" + q.display())
+            ans = answer_source(q)
             ok, feedback = self.llm.grade(q, ans)
             correct += int(ok)
             echo(feedback)

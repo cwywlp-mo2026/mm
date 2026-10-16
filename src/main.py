@@ -32,16 +32,21 @@ DEFAULT_SKILLS_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "skills")
 
 
-def make_demo_answer_source(answers):
-    it = iter(answers)
-    return lambda: next(it)
+def demo_answer(q):
+    """demo：单选题自动选正确答案；简答题故意只答一点，用来演示错题会打印参考答案+解析。"""
+    if q.kind == "choice":
+        ans = q.letter_of(q.answer)
+    else:
+        ans = "title 标题"
+    print(f"你的回答：{ans}")
+    return ans
 
 
 def main():
     parser = argparse.ArgumentParser(description="谷歌 SEO 学习 Agent（skill 驱动）")
     parser.add_argument("--query", default="我想学习谷歌 SEO", help="用户诉求")
     parser.add_argument("--skills-dir", default=DEFAULT_SKILLS_DIR, help="skill 根目录")
-    parser.add_argument("--demo", action="store_true", help="用预置答案免交互跑通")
+    parser.add_argument("--demo", action="store_true", help="自动作答，免交互跑通")
     parser.add_argument("--list", action="store_true", help="只列出发现的 skills")
     args = parser.parse_args()
 
@@ -57,14 +62,11 @@ def main():
     agent = SEOAgent(llm, index)
 
     if args.demo:
-        # 预置：Q1 答对 B、Q2 答对 B、Q3 答对（含 title/正文/alt 三个要点）
-        answers = ["B", "B", "要放在 title 标题、正文首段，还有图片 alt 里"]
-        source = make_demo_answer_source(answers)
-        agent.run(args.query, source)
+        agent.run(args.query, demo_answer)
     else:
-        def source():
+        def interactive(q):
             return input("你的回答：").strip()
-        agent.run(args.query, source)
+        agent.run(args.query, interactive)
 
 
 if __name__ == "__main__":
