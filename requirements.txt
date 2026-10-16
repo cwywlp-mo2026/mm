@@ -1,0 +1,5 @@
+# 本项目仅使用 Python 标准库（json / re / os / urllib / argparse / dataclasses）。
+# 无需安装第三方依赖即可离线运行。
+#
+# 可选：若你想改用官方 SDK 也完全兼容，自行安装：
+#   pip install openai
